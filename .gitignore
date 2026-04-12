@@ -1,0 +1,7 @@
+# Data folders
+dados_inmet_2026/
+
+
+# Environment files
+.env
+
