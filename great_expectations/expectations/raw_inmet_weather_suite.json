@@ -1,0 +1,34 @@
+{
+  "data_asset_type": null,
+  "expectation_suite_name": "raw_inmet_weather_suite",
+  "ge_cloud_id": null,
+  "expectations": [
+    {
+      "expectation_type": "expect_column_values_to_not_be_null",
+      "kwargs": {
+        "column": "data"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_between",
+      "kwargs": {
+        "column": "umidade_relativa_do_ar_horaria",
+        "min_value": 0,
+        "max_value": 100,
+        "mostly": 0.98
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_not_be_null",
+      "kwargs": {
+        "column": "meta_codigo_wmo"
+      },
+      "meta": {}
+    }
+  ],
+  "meta": {
+    "great_expectations_version": "0.18.22"
+  }
+}

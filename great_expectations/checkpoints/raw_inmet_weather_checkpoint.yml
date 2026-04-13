@@ -1,0 +1,7 @@
+name: raw_inmet_weather_checkpoint
+config_version: 1.0
+class_name: Checkpoint
+run_name_template: "%Y%m%d-%H%M%S-inmet-raw"
+validations:
+  - batch_request: {}
+    expectation_suite_name: raw_inmet_weather_suite

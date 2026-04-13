@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+.env
+.venv/
+logs/
+data/
+.tmp/
+.DS_Store
+.airflow/
+metabase-data/
+postgres-data/
+**/target/
+**/dbt_packages/
+**/logs/
+**/uncommitted/data_docs/
+**/uncommitted/validations/
+**/uncommitted/validation_results/*.json

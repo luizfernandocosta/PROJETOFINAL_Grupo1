@@ -1,0 +1,60 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: raw
+    tables:
+      - name: inmet_weather_raw
+        description: "Tabela bruta carregada a partir dos CSVs históricos do INMET."
+
+models:
+  - name: stg_inmet_weather
+    description: "Camada silver com padronização de tipos e nomes de colunas do INMET."
+    columns:
+      - name: data_referencia
+        tests:
+          - not_null
+      - name: codigo_wmo
+        tests:
+          - not_null
+
+  - name: dim_station
+    description: "Dimensão de estações meteorológicas (WMO)."
+    columns:
+      - name: station_sk
+        tests:
+          - unique
+          - not_null
+      - name: codigo_wmo
+        tests:
+          - not_null
+
+  - name: dim_date
+    description: "Dimensão de calendário para análises temporais."
+    columns:
+      - name: date_sk
+        tests:
+          - unique
+          - not_null
+      - name: mes
+        tests:
+          - accepted_values:
+              values: [1,2,3,4,5,6,7,8,9,10,11,12]
+
+  - name: fact_weather_hourly
+    description: "Fato horário de observações meteorológicas por estação."
+    columns:
+      - name: weather_event_sk
+        tests:
+          - unique
+          - not_null
+      - name: station_sk
+        tests:
+          - not_null
+      - name: date_sk
+        tests:
+          - not_null
+      - name: intensidade_chuva
+        tests:
+          - accepted_values:
+              values: ['sem_dado', 'sem_chuva', 'chuva_fraca', 'chuva_moderada', 'chuva_intensa']

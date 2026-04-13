@@ -1,0 +1,130 @@
+version: "3.9"
+
+x-airflow-common: &airflow-common
+  image: apache/airflow:2.9.3
+  env_file:
+    - .env
+  environment:
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/airflow
+    AIRFLOW__WEBSERVER__RBAC: "true"
+    AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "true"
+    _PIP_ADDITIONAL_REQUIREMENTS: >-
+      dbt-postgres==1.8.2
+      dbt-core==1.8.7
+      great_expectations==0.18.22
+      pandas==2.1.4
+  volumes:
+    - ./airflow/dags:/opt/airflow/dags
+    - ./airflow/include:/opt/airflow/include
+    - ./ingestion:/opt/project/ingestion
+    - ./great_expectations:/opt/project/great_expectations
+    - ./dbt:/opt/project/dbt
+    - ./docs:/opt/project/docs
+  depends_on:
+    postgres:
+      condition: service_healthy
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: inmet-postgres
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+      - ./sql/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  airflow-init:
+    <<: *airflow-common
+    container_name: inmet-airflow-init
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        airflow db migrate && \
+        airflow users create \
+          --role Admin \
+          --username ${AIRFLOW_USER} \
+          --password ${AIRFLOW_PASSWORD} \
+          --firstname Air \
+          --lastname Flow \
+          --email airflow@example.com || true
+    restart: "no"
+
+  airflow-webserver:
+    <<: *airflow-common
+    container_name: inmet-airflow-webserver
+    command: webserver
+    ports:
+      - "8080:8080"
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8080/health').read()\""]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+
+  airflow-scheduler:
+    <<: *airflow-common
+    container_name: inmet-airflow-scheduler
+    command: scheduler
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+
+  metabase:
+    image: metabase/metabase:latest
+    container_name: inmet-metabase
+    ports:
+      - "3400:3000"
+    volumes:
+      - ./metabase-data:/metabase-data
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  inmet-ingestion:
+    build:
+      context: ./ingestion
+    container_name: inmet-ingestion
+    profiles: ["bootstrap"]
+    env_file:
+      - .env
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      INMET_YEARS: ${INMET_YEARS}
+      INMET_BASE_URL: ${INMET_BASE_URL}
+      LOAD_MODE: full_refresh
+    command: ["python", "ingest_inmet.py"]
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # Airbyte é opcional neste projeto pois a ingestão foi implementada por script Python.
+  # Se o grupo quiser avaliar também com Airbyte, habilite o profile `airbyte`.
+  airbyte-placeholder:
+    image: airbyte/webapp:0.63.10
+    container_name: inmet-airbyte-placeholder
+    profiles: ["airbyte"]
+    ports:
+      - "8000:80"
