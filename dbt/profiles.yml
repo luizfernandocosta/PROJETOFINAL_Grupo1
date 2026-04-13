@@ -5,9 +5,9 @@ inmet_analytics:
       type: postgres
       host: "{{ env_var('POSTGRES_HOST', 'localhost') }}"
       port: "{{ env_var('POSTGRES_PORT', '5432') | int }}"
-      user: "{{ env_var('POSTGRES_USER', 'edp') }}"
-      password: "{{ env_var('POSTGRES_PASSWORD', 'edp123') }}"
-      dbname: "{{ env_var('POSTGRES_DB', 'weather_dw') }}"
+      user: "{{ env_var('POSTGRES_USER', 'inmet_user') }}"
+      password: "{{ env_var('POSTGRES_PASSWORD', 'inmet_password') }}"
+      dbname: "{{ env_var('POSTGRES_DB', 'inmet_db') }}"
       schema: gold
       threads: 4
       keepalives_idle: 0

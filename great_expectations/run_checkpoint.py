@@ -14,9 +14,9 @@ REPORT_PATH = Path("/opt/project/great_expectations/uncommitted/validation_resul
 def main() -> int:
     host = os.getenv("POSTGRES_HOST", "postgres")
     port = os.getenv("POSTGRES_PORT", "5432")
-    db = os.getenv("POSTGRES_DB", "weather_dw")
-    user = os.getenv("POSTGRES_USER", "edp")
-    pwd = os.getenv("POSTGRES_PASSWORD", "edp123")
+    db = os.getenv("POSTGRES_DB", "inmet_db")
+    user = os.getenv("POSTGRES_USER", "inmet_user")
+    pwd = os.getenv("POSTGRES_PASSWORD", "inmet_password")
 
     uri = f"postgresql+psycopg2://{user}:{pwd}@{host}:{port}/{db}"
     engine = create_engine(uri)
@@ -33,6 +33,16 @@ def main() -> int:
         raise RuntimeError("Nenhum dado disponível em raw.inmet_weather_raw para validar.")
 
     gx_df = ge.from_pandas(df)
+
+    # Convert numeric columns for validation
+    numeric_columns = {
+        "umidade_relativa_do_ar_horaria": "float64",
+        "temperatura_do_ar_bulbo_seco_horaria": "float64",
+    }
+    
+    for col, dtype in numeric_columns.items():
+        if col in gx_df.columns:
+            gx_df[col] = pd.to_numeric(gx_df[col], errors='coerce')
 
     validations = []
     validations.append(gx_df.expect_column_values_to_not_be_null("data"))

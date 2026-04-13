@@ -89,4 +89,9 @@ with DAG(
         bash_command="cd /opt/project/dbt/inmet_analytics && dbt docs generate --profiles-dir /opt/project/dbt",
     )
 
-    ingest_raw >> airbyte_sensor >> ge_validation >> dbt_deps >> dbt_run >> dbt_test >> dbt_docs
+    dbt_docs_serve = BashOperator(
+        task_id="dbt_docs_serve",
+        bash_command="cd /opt/project/dbt/inmet_analytics && dbt docs serve --profiles-dir /opt/project/dbt --host 0.0.0.0 --port 8081 &",
+    )
+
+    ingest_raw >> airbyte_sensor >> ge_validation >> dbt_deps >> dbt_run >> dbt_test >> dbt_docs >> dbt_docs_serve
