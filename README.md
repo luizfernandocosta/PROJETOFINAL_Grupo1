@@ -2,7 +2,7 @@
 
 Pipeline ELT completo usando dados históricos de estações automáticas do INMET.
 
-## 1) Storytelling (Domínio: Agro)
+## 1) Storytelling (Domínio: Clima - Agro)
 
 Uma cooperativa agrícola precisa planejar irrigação, manejo de solo e alertas de risco climático por região. O time de operações precisa de um painel diário confiável para responder:
 
@@ -89,6 +89,14 @@ dbt deps
 dbt run --profiles-dir ../
 dbt test --profiles-dir ../
 dbt docs generate --profiles-dir ../
+```
+
+### 5.5
+### Para parar os containers
+
+```bash
+docker compose down        # para e remove containers, mantém volumes
+docker compose down -v     # para, remove containers E volumes (apaga dados do banco e do Grafana)
 ```
 
 ## 6) Modelagem (dbt)
