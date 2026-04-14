@@ -69,7 +69,6 @@ services:
     command: webserver
     ports:
       - "8080:8080"
-      - "8081:8081"
     depends_on:
       airflow-init:
         condition: service_completed_successfully
@@ -83,6 +82,16 @@ services:
     <<: *airflow-common
     container_name: inmet-airflow-scheduler
     command: scheduler
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+
+  dbt-docs:
+    <<: *airflow-common
+    container_name: inmet-dbt-docs
+    command: bash -lc "cd /opt/project/dbt/inmet_analytics && dbt docs serve --profiles-dir /opt/project/dbt --host 0.0.0.0 --port 8081"
+    ports:
+      - "8081:8081"
     depends_on:
       airflow-init:
         condition: service_completed_successfully
