@@ -11,7 +11,7 @@ with base as (
 )
 
 select
-    {{ dbt_utils.generate_surrogate_key(['codigo_wmo']) }} as station_sk,
+    {{ dbt_utils.generate_surrogate_key(['codigo_wmo']) }}  as station_sk,
     codigo_wmo,
     nome_estacao,
     uf,

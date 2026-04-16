@@ -4,10 +4,63 @@
   "ge_cloud_id": null,
   "expectations": [
     {
+      "expectation_type": "expect_column_to_exist",
+      "kwargs": { "column": "data" },
+      "meta": { "notes": "Coluna de data é obrigatória no schema INMET." }
+    },
+    {
+      "expectation_type": "expect_column_to_exist",
+      "kwargs": { "column": "hora_referencia" },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_to_exist",
+      "kwargs": { "column": "meta_codigo_wmo" },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_to_exist",
+      "kwargs": { "column": "temperatura_do_ar_bulbo_seco_horaria" },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_to_exist",
+      "kwargs": { "column": "umidade_relativa_do_ar_horaria" },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_to_exist",
+      "kwargs": { "column": "precipitacao_total_horario" },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_to_exist",
+      "kwargs": { "column": "vento_velocidade_horaria" },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_to_exist",
+      "kwargs": { "column": "vento_direcao_horaria_graus" },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_to_exist",
+      "kwargs": { "column": "vento_rajada_maxima_horaria" },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_to_exist",
+      "kwargs": { "column": "pressao_atmosferica_ao_nivel_da_estacao_horaria" },
+      "meta": {}
+    },
+    {
       "expectation_type": "expect_column_values_to_not_be_null",
-      "kwargs": {
-        "column": "data"
-      },
+      "kwargs": { "column": "data" },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_not_be_null",
+      "kwargs": { "column": "meta_codigo_wmo" },
       "meta": {}
     },
     {
@@ -21,11 +74,31 @@
       "meta": {}
     },
     {
-      "expectation_type": "expect_column_values_to_not_be_null",
+      "expectation_type": "expect_column_values_to_be_between",
       "kwargs": {
-        "column": "meta_codigo_wmo"
+        "column": "temperatura_do_ar_bulbo_seco_horaria",
+        "min_value": -20,
+        "max_value": 55,
+        "mostly": 0.98
       },
       "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_between",
+      "kwargs": {
+        "column": "precipitacao_total_horario",
+        "min_value": 0,
+        "mostly": 0.999
+      },
+      "meta": { "notes": "Precipitação negativa é fisicamente impossível — indica dado corrompido." }
+    },
+    {
+      "expectation_type": "expect_table_row_count_to_be_between",
+      "kwargs": {
+        "min_value": 1000000,
+        "max_value": 10000000
+      },
+      "meta": { "notes": "Estimativa: ~600 estações × 8.760 h/ano. Detecta downloads truncados ou duplicações." }
     }
   ],
   "meta": {
