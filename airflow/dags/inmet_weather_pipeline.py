@@ -16,6 +16,8 @@ except Exception:  # pragma: no cover
     GE_PROVIDER_AVAILABLE = False
 
     class GreatExpectationsOperator(BashOperator):
+        """Fallback: executa run_checkpoint.py via bash quando o provider não está instalado."""
+
         def __init__(self, *args, **kwargs):
             kwargs.pop("data_context_root_dir", None)
             kwargs.pop("checkpoint_name", None)
@@ -40,7 +42,7 @@ default_args = {
 with DAG(
     dag_id="inmet_weather_pipeline",
     default_args=default_args,
-    description="Pipeline ELT INMET: ingestao -> GE -> dbt run -> dbt test",
+    description="Pipeline ELT INMET: ingestao -> GE -> dbt run -> dbt test -> dbt docs",
     schedule="0 6 * * *",
     start_date=datetime(2026, 1, 1),
     catchup=False,
@@ -53,7 +55,8 @@ with DAG(
         python_callable=run_ingestion_script,
     )
 
-    # Task id mantém referência ao requisito de dependência com "AirbyteSensor".
+    # Placeholder de dependência — mantém referência ao requisito AirbyteSensor do enunciado.
+    # Em uma evolução futura pode ser substituído pelo operador real do Airbyte.
     airbyte_sensor = EmptyOperator(task_id="airbyte_sensor")
 
     if GE_PROVIDER_AVAILABLE:
@@ -71,7 +74,7 @@ with DAG(
 
     dbt_deps = BashOperator(
         task_id="dbt_deps",
-        bash_command="cd /opt/project/dbt/inmet_analytics && dbt deps",
+        bash_command="cd /opt/project/dbt/inmet_analytics && dbt deps --profiles-dir /opt/project/dbt",
     )
 
     dbt_run = BashOperator(
@@ -89,9 +92,10 @@ with DAG(
         bash_command="cd /opt/project/dbt/inmet_analytics && dbt docs generate --profiles-dir /opt/project/dbt",
     )
 
-    dbt_docs_serve = BashOperator(
-        task_id="dbt_docs_serve",
-        bash_command="cd /opt/project/dbt/inmet_analytics && dbt docs serve --profiles-dir /opt/project/dbt --host 0.0.0.0 --port 8081 &",
-    )
+    # Nota: dbt docs serve NÃO está na DAG intencionalmente.
+    # O servidor de documentação é gerenciado pelo serviço `inmet-dbt-docs`
+    # no docker-compose.yml e fica disponível permanentemente em localhost:8081.
+    # Colocar `dbt docs serve` aqui causaria o processo filho morrer
+    # ao término da task, sem servir nada.
 
-    ingest_raw >> airbyte_sensor >> ge_validation >> dbt_deps >> dbt_run >> dbt_test >> dbt_docs >> dbt_docs_serve
+    ingest_raw >> airbyte_sensor >> ge_validation >> dbt_deps >> dbt_run >> dbt_test >> dbt_docs

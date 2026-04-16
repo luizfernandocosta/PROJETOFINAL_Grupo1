@@ -35,10 +35,10 @@ def parse_years(raw_years: str) -> list[int]:
 def build_pg_engine() -> tuple:
     host = os.getenv("POSTGRES_HOST", "localhost")
     port = int(os.getenv("POSTGRES_PORT", "5432"))
-    db = os.getenv("POSTGRES_DB", "weather_dw")
-    user = os.getenv("POSTGRES_USER", "edp")
-    pwd = os.getenv("POSTGRES_PASSWORD", "edp123")
-    uri = f"postgresql+psycopg2://{user}:{pwd}@{host}:{port}/{db}"
+    db   = os.getenv("POSTGRES_DB", "inmet_db")
+    user = os.getenv("POSTGRES_USER", "inmet_user")
+    pwd  = os.getenv("POSTGRES_PASSWORD", "inmet_pass")
+    uri  = f"postgresql+psycopg2://{user}:{pwd}@{host}:{port}/{db}"
     return create_engine(uri), uri
 
 
@@ -63,7 +63,6 @@ def split_metadata_and_data(raw_text: str) -> tuple[dict, str]:
             parts = [normalize_col(p) for p in line.split(";")]
             first = parts[0] if parts else ""
             second = parts[1] if len(parts) > 1 else ""
-            # O cabeçalho tabular deve começar com data e hora (evita falsos positivos em metadados).
             if first.startswith("data") and "hora" in second:
                 header_idx = idx
                 break
@@ -147,7 +146,6 @@ def parse_single_csv(file_bytes: bytes, source_file: str, source_year: int) -> p
     df.columns = [normalize_col(c) for c in df.columns]
     df = df.loc[:, [c for c in df.columns if c and not c.startswith("unnamed")]]
 
-    # Padroniza nomes críticos que podem variar com unidade no cabeçalho.
     canonical_prefixes = {
         "data": "data",
         "hora_utc": "hora_utc",
@@ -165,10 +163,6 @@ def parse_single_csv(file_bytes: bytes, source_file: str, source_year: int) -> p
             rename_map[match] = canonical
     if rename_map:
         df = df.rename(columns=rename_map)
-
-    for col_name in ("data", "hora_utc", "hora"): 
-        if col_name in df.columns:
-            break
 
     if "data" in df.columns:
         df["data"] = pd.to_datetime(df["data"], errors="coerce").dt.date.astype("string")
@@ -279,10 +273,10 @@ def ensure_schemas(engine):
 
 
 def main() -> int:
-    years = parse_years(os.getenv("INMET_YEARS", "2024,2025"))
+    years    = parse_years(os.getenv("INMET_YEARS", "2024,2025"))
     load_mode = os.getenv("LOAD_MODE", "full_refresh").strip().lower()
-    base_url = os.getenv("INMET_BASE_URL", "https://portal.inmet.gov.br/uploads/dadoshistoricos")
-    workdir = Path(os.getenv("WORKDIR", "/tmp/inmet"))
+    base_url  = os.getenv("INMET_BASE_URL", "https://portal.inmet.gov.br/uploads/dadoshistoricos")
+    workdir   = Path(os.getenv("WORKDIR", "/tmp/inmet"))
 
     engine, uri = build_pg_engine()
     print(f"[INFO] Conectando em: {uri}")
