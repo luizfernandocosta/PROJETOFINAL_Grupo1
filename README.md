@@ -274,3 +274,8 @@ Incluir no repositório antes da entrega:
 2. Captura do relatório de validação GE (JSON ou HTML)
 3. Captura da linhagem no `dbt docs` (lineage graph)
 4. Vídeo de demonstração (até 7 min)
+
+
+# 12. Referencias
+Dados de GeoJSON: 
+https://github.com/giuliano-macedo/geodata-br-states

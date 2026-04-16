@@ -38,20 +38,33 @@ REPORT_PATH = Path(
     "raw_inmet_weather_checkpoint.json"
 )
 
-# Colunas que o schema do INMET deve ter.
-REQUIRED_COLUMNS = [
-    "data",
-    "hora_referencia",
-    "meta_codigo_wmo",
-    "temperatura_do_ar_bulbo_seco_horaria",
-    "umidade_relativa_do_ar_horaria",
-    "precipitacao_total_horario",
-    "vento_velocidade_horaria",
-    "vento_direcao_horaria_graus",
-    "vento_rajada_maxima_horaria",
-    "pressao_atmosferica_ao_nivel_da_estacao_horaria",
-    "source_year",
-]
+MIN_EXPECTED_ROWS = int(os.getenv("GE_MIN_EXPECTED_ROWS", "100000"))
+MAX_EXPECTED_ROWS = int(os.getenv("GE_MAX_EXPECTED_ROWS", "10000000"))
+
+# Colunas obrigatórias com aliases para variações comuns de cabeçalho do INMET.
+REQUIRED_COLUMNS = {
+    "data": ["data"],
+    "hora_referencia": ["hora_referencia", "hora", "hora_utc"],
+    "meta_codigo_wmo": ["meta_codigo_wmo"],
+    "temperatura_do_ar_bulbo_seco_horaria": ["temperatura_do_ar_bulbo_seco_horaria"],
+    "umidade_relativa_do_ar_horaria": ["umidade_relativa_do_ar_horaria"],
+    "precipitacao_total_horario": ["precipitacao_total_horario"],
+    "vento_velocidade_horaria": ["vento_velocidade_horaria", "vento_velocidade_horaria_m_s"],
+    "vento_direcao_horaria_graus": ["vento_direcao_horaria_graus", "vento_direcao_horaria_gr_gr"],
+    "vento_rajada_maxima_horaria": ["vento_rajada_maxima_horaria", "vento_rajada_maxima_m_s"],
+    "pressao_atmosferica_ao_nivel_da_estacao_horaria": [
+        "pressao_atmosferica_ao_nivel_da_estacao_horaria",
+        "pressao_atmosferica_ao_nivel_da_estacao_horaria_mb",
+    ],
+    "source_year": ["source_year"],
+}
+
+
+def _resolve_column(df_columns, candidates):
+    for name in candidates:
+        if name in df_columns:
+            return name
+    return None
 
 
 def _build_engine():
@@ -91,63 +104,73 @@ def main() -> int:
     gx_df = ge.from_pandas(df)
 
     # Converte colunas numéricas para validação de range
-    numeric_cols = {
-        "umidade_relativa_do_ar_horaria":       "float64",
-        "temperatura_do_ar_bulbo_seco_horaria": "float64",
-        "precipitacao_total_horario":           "float64",
+    resolved = {
+        key: _resolve_column(gx_df.columns, aliases)
+        for key, aliases in REQUIRED_COLUMNS.items()
     }
-    for col, dtype in numeric_cols.items():
-        if col in gx_df.columns:
+
+    numeric_cols = [
+        resolved["umidade_relativa_do_ar_horaria"],
+        resolved["temperatura_do_ar_bulbo_seco_horaria"],
+        resolved["precipitacao_total_horario"],
+    ]
+    for col in numeric_cols:
+        if col:
             gx_df[col] = pd.to_numeric(gx_df[col], errors="coerce")
 
     validations = []
 
     # ── 1. Colunas obrigatórias existem ─────────────────────────
-    for col in REQUIRED_COLUMNS:
-        validations.append(gx_df.expect_column_to_exist(col))
+    for canonical, aliases in REQUIRED_COLUMNS.items():
+        actual_col = resolved[canonical]
+        validations.append(
+            gx_df.expect_column_to_exist(actual_col if actual_col else aliases[0])
+        )
 
     # ── 2. Valores não nulos ─────────────────────────────────────
-    validations.append(gx_df.expect_column_values_to_not_be_null("data"))
-    if "meta_codigo_wmo" in gx_df.columns:
-        validations.append(gx_df.expect_column_values_to_not_be_null("meta_codigo_wmo"))
+    if resolved["data"]:
+        validations.append(gx_df.expect_column_values_to_not_be_null(resolved["data"]))
+    if resolved["meta_codigo_wmo"]:
+        validations.append(gx_df.expect_column_values_to_not_be_null(resolved["meta_codigo_wmo"]))
 
     # ── 3. Umidade entre 0 e 100 ─────────────────────────────────
-    if "umidade_relativa_do_ar_horaria" in gx_df.columns:
+    if resolved["umidade_relativa_do_ar_horaria"]:
         validations.append(
             gx_df.expect_column_values_to_be_between(
-                "umidade_relativa_do_ar_horaria",
+                resolved["umidade_relativa_do_ar_horaria"],
                 min_value=0, max_value=100, mostly=0.98,
             )
         )
 
     # ── 4. Temperatura entre -20 e 55 °C ────────────────────────
-    if "temperatura_do_ar_bulbo_seco_horaria" in gx_df.columns:
+    if resolved["temperatura_do_ar_bulbo_seco_horaria"]:
         validations.append(
             gx_df.expect_column_values_to_be_between(
-                "temperatura_do_ar_bulbo_seco_horaria",
+                resolved["temperatura_do_ar_bulbo_seco_horaria"],
                 min_value=-20, max_value=55, mostly=0.98,
             )
         )
 
     # ── 5. Precipitação não pode ser negativa ────────────────────
-    if "precipitacao_total_horario" in gx_df.columns:
+    if resolved["precipitacao_total_horario"]:
         validations.append(
             gx_df.expect_column_values_to_be_between(
-                "precipitacao_total_horario",
+                resolved["precipitacao_total_horario"],
                 min_value=0, mostly=0.999,
             )
         )
 
     # ── 6. Row count dentro da faixa esperada ───────────────────
     # Sanity check: detecta downloads truncados ou duplicações massivas.
-    # Estimativa: ~600 estações × 8.760 h/ano × N anos.
+    # Estimativa depende da janela carregada (ano completo vs parcial).
+    # Limites podem ser ajustados por variável de ambiente.
     # Usamos o count real (não a amostra) para essa validação.
-    row_count_ok = 1_000_000 <= total_rows <= 10_000_000
+    row_count_ok = MIN_EXPECTED_ROWS <= total_rows <= MAX_EXPECTED_ROWS
     validations.append({
         "expectation_type": "expect_table_row_count_to_be_between",
         "success": row_count_ok,
         "result": {"observed_value": total_rows},
-        "kwargs": {"min_value": 1_000_000, "max_value": 10_000_000},
+        "kwargs": {"min_value": MIN_EXPECTED_ROWS, "max_value": MAX_EXPECTED_ROWS},
     })
 
     success = all(

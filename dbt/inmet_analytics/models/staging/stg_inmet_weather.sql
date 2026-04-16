@@ -25,7 +25,7 @@ renamed as (
         -- A macro uf_to_timezone mapeia cada UF para seu fuso horário brasileiro.
         (
             (data::date::text || ' ' || hora_referencia)::timestamp at time zone 'UTC'
-            at time zone {{ uf_to_timezone(ltrim(meta_uf, ';')) }}
+            at time zone {{ uf_to_timezone("ltrim(meta_uf, ';')") }}
         ) as data_hora_local,
 
         -- Temperatura e umidade
@@ -36,12 +36,12 @@ renamed as (
         nullif(nullif(replace(precipitacao_total_horario, ',', '.'), ''), 'NULL')::numeric(10,2) as precipitacao_mm,
 
         -- Vento
-        nullif(nullif(replace(vento_velocidade_horaria,         ',', '.'), ''), 'NULL')::numeric(10,2) as vento_velocidade_ms,
-        nullif(nullif(replace(vento_direcao_horaria_graus,      ',', '.'), ''), 'NULL')::numeric(6,1)  as vento_direcao_graus,
-        nullif(nullif(replace(vento_rajada_maxima_horaria,      ',', '.'), ''), 'NULL')::numeric(10,2) as vento_rajada_ms,
+        nullif(nullif(replace(vento_velocidade_horaria_m_s,     ',', '.'), ''), 'NULL')::numeric(10,2) as vento_velocidade_ms,
+        nullif(nullif(replace(vento_direcao_horaria_gr_gr,      ',', '.'), ''), 'NULL')::numeric(6,1)  as vento_direcao_graus,
+        nullif(nullif(replace(vento_rajada_maxima_m_s,          ',', '.'), ''), 'NULL')::numeric(10,2) as vento_rajada_ms,
 
         -- Pressão atmosférica
-        nullif(nullif(replace(pressao_atmosferica_ao_nivel_da_estacao_horaria, ',', '.'), ''), 'NULL')::numeric(10,2) as pressao_atm_hpa,
+        nullif(nullif(replace(pressao_atmosferica_ao_nivel_da_estacao_horaria_mb, ',', '.'), ''), 'NULL')::numeric(10,2) as pressao_atm_hpa,
 
         -- Metadados de carga
         source_year,
