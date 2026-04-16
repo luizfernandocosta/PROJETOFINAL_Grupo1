@@ -17,6 +17,14 @@ models:
       - name: codigo_wmo
         tests:
           - not_null
+      - name: radiacao_global_kj_m2
+        description: "Radiação global horária (kJ/m²)."
+      - name: vento_direcao_gr
+        description: "Direção horária do vento em graus."
+      - name: vento_rajada_max_m_s
+        description: "Rajada máxima do vento na hora (m/s)."
+      - name: vento_velocidade_m_s
+        description: "Velocidade horária do vento (m/s)."
 
   - name: dim_station
     description: "Dimensão de estações meteorológicas (WMO)."
@@ -58,3 +66,19 @@ models:
         tests:
           - accepted_values:
               values: ['sem_dado', 'sem_chuva', 'chuva_fraca', 'chuva_moderada', 'chuva_intensa']
+      - name: periodo_dia
+        tests:
+          - accepted_values:
+              values: ['madrugada', 'manha', 'tarde', 'noite']
+      - name: faixa_radiacao
+        tests:
+          - accepted_values:
+              values: ['sem_dado', 'sem_radiacao', 'radiacao_baixa', 'radiacao_media', 'radiacao_alta']
+      - name: direcao_vento_cardinal
+        tests:
+          - accepted_values:
+              values: ['sem_dado', 'N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO']
+      - name: intensidade_vento
+        tests:
+          - accepted_values:
+              values: ['sem_dado', 'calmo', 'fraco', 'moderado', 'forte']
