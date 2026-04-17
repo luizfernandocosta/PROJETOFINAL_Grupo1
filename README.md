@@ -1,48 +1,48 @@
 # Projeto Final - Fundamentos de Engenharia de Dados
 
-Pipeline ELT completo com dados meteorologicos historicos do INMET, aplicado ao contexto agricola.
+Pipeline ELT completo com dados meteorológicos históricos do INMET, aplicado ao contexto agrícola.
 
 ---
 
-## Sumario
+## Sumário
 
 1. [Contexto e Storytelling](#1-contexto-e-storytelling)
 2. [Dataset](#2-dataset)
 3. [Arquitetura](#3-arquitetura)
 4. [Tecnologias utilizadas](#4-tecnologias-utilizadas)
-5. [Estrutura do repositorio](#5-estrutura-do-repositorio)
-6. [Pre-requisitos](#6-pre-requisitos)
+5. [Estrutura do repositório](#5-estrutura-do-repositório)
+6. [Pré-requisitos](#6-pré-requisitos)
 7. [Passo a passo para executar](#7-passo-a-passo-para-executar)
 8. [Modelagem dbt](#8-modelagem-dbt)
-9. [Validacao com Great Expectations](#9-validacao-com-great-expectations)
+9. [Validação com Great Expectations](#9-validação-com-great-expectations)
 10. [Dashboards no Metabase](#10-dashboards-no-metabase)
-11. [Solucao de problemas comuns](#11-solucao-de-problemas-comuns)
-12. [Referencias](#12-referencias)
+11. [Solução de problemas comuns](#11-solução-de-problemas-comuns)
+12. [Referências](#12-referências)
 
 ---
 
 ## 1. Contexto e Storytelling
 
-**Dominio:** Clima com aplicacao agricola
+**Domínio:** Clima com aplicação agrícola
 
-Uma cooperativa agricola que atua em diferentes regioes do Brasil precisa tomar decisoes operacionais diarias com base em dados climaticos confiaveis. A equipe de agronomia e operacoes depende de um painel atualizado para responder perguntas como:
+Uma cooperativa agrícola que atua em diferentes regiões do Brasil precisa tomar decisões operacionais diárias com base em dados climáticos confiáveis. A equipe de agronomia e operações depende de um painel atualizado para responder perguntas como:
 
-- Quais regioes e estacoes registraram maior volume de chuva em determinado periodo?
-- Como temperatura e umidade evoluiram ao longo do tempo por estado?
-- Quais localidades registraram eventos de chuva intensa ou rajadas de vento que afetam operacoes de campo, como pulverizacao, colheita ou plantio?
+- Quais regiões e estações registraram maior volume de chuva em determinado período?
+- Como temperatura e umidade evoluíram ao longo do tempo por estado?
+- Quais localidades registraram eventos de chuva intensa ou rajadas de vento que afetam operações de campo, como pulverização, colheita ou plantio?
 
-O pipeline consome dados das estacoes meteorologicas automaticas do INMET (Instituto Nacional de Meteorologia) e os transforma em um modelo analitico pronto para consulta, com validacao de qualidade em todas as camadas.
+O pipeline consome dados das estações meteorológicas automáticas do INMET (Instituto Nacional de Meteorologia) e os transforma em um modelo analítico pronto para consulta, com validação de qualidade em todas as camadas.
 
 ---
 
 ## 2. Dataset
 
 - **Fonte oficial:** https://portal.inmet.gov.br/dadoshistoricos
-- **Formato:** arquivos ZIP anuais contendo CSVs por estacao meteorologica
+- **Formato:** arquivos ZIP anuais contendo CSVs por estação meteorológica
 - **URL de download usada pelo pipeline:** `https://portal.inmet.gov.br/uploads/dadoshistoricos/{ano}.zip`
-- **Cobertura:** estacoes automaticas distribuidas por todos os estados do Brasil
-- **Granularidade:** leituras horarias por estacao (temperatura, umidade, precipitacao, vento, pressao atmosferica)
-- **Nota:** o dataset nao e versionado no repositorio por conta do volume. O script de ingestao faz o download automaticamente a partir da URL oficial.
+- **Cobertura:** estações automáticas distribuídas por todos os estados do Brasil
+- **Granularidade:** leituras horárias por estação (temperatura, umidade, precipitação, vento, pressão atmosférica)
+- **Nota:** o dataset não é versionado no repositório por conta do volume. O script de ingestão faz o download automaticamente a partir da URL oficial.
 
 ---
 
@@ -60,7 +60,7 @@ PostgreSQL - schema raw
       |
       v
 Great Expectations
-(validacao da camada raw)
+(validação da camada raw)
       |
       v
 dbt - schema silver
@@ -78,30 +78,30 @@ dbt - schema gold
 Metabase Dashboards
 
 [ Airflow DAG orquestra todo o fluxo acima ]
-[ Docker garante reproducibilidade do ambiente ]
+[ Docker garante reprodutibilidade do ambiente ]
 ```
 
 ---
 
 ## 4. Tecnologias utilizadas
 
-| Tecnologia | Versao | Papel no pipeline |
+| Tecnologia | Versão | Papel no pipeline |
 |---|---|---|
-| Python | 3.11 | Script de ingestao (download, parse e carga no PostgreSQL) |
-| PostgreSQL | 16 | Banco principal com arquitetura medalhao (raw / silver / gold) |
-| Great Expectations | 0.18.22 | Validacao de qualidade dos dados na camada raw |
-| dbt-postgres | 1.8.2 | Transformacao raw -> silver -> gold, testes e documentacao |
-| Apache Airflow | 2.9.3 | Orquestracao do pipeline com dependencias e tratamento de falhas |
+| Python | 3.11 | Script de ingestão (download, parse e carga no PostgreSQL) |
+| PostgreSQL | 16 | Banco principal com arquitetura medalhão (raw / silver / gold) |
+| Great Expectations | 0.18.22 | Validação de qualidade dos dados na camada raw |
+| dbt-postgres | 1.8.2 | Transformação raw -> silver -> gold, testes e documentação |
+| Apache Airflow | 2.9.3 | Orquestração do pipeline com dependências e tratamento de falhas |
 | Metabase | v0.50.13 | Dashboards conectados ao schema gold |
-| Docker / Docker Compose | v2 | Containerizacao e reproducibilidade do ambiente |
+| Docker / Docker Compose | v2 | Containerização e reprodutibilidade do ambiente |
 
-**Fluxo de execucao da DAG (Airflow):**
+**Fluxo de execução da DAG (Airflow):**
 
 ```
 python_ingestion_raw
       |
       v
-airbyte_sensor  (placeholder de dependencia)
+airbyte_sensor  (placeholder de dependência)
       |
       v
 great_expectations_validation
@@ -112,19 +112,19 @@ dbt_deps -> dbt_run -> dbt_test -> dbt_docs_generate
 
 ---
 
-## 5. Estrutura do repositorio
+## 5. Estrutura do repositório
 
 ```
 PROJETOFINAL_Grupo1/
 ├── airflow/
-│   ├── Dockerfile  # Imagem customizada com dbt e GE pre-instalados
+│   ├── Dockerfile  # Imagem customizada com dbt e GE pré-instalados
 │   ├── requirements-airflow.txt
 │   └── dags/
 │       └── inmet_weather_pipeline.py  # DAG principal do pipeline
 ├── dashboards/
 │   └── dashboard_queries.sql  # Queries base para os dashboards no Metabase
 ├── dbt/
-│   ├── profiles.yml  # Configuracao de conexao com o PostgreSQL
+│   ├── profiles.yml  # Configuração de conexão com o PostgreSQL
 │   └── inmet_analytics/
 │       ├── dbt_project.yml
 │       ├── packages.yml
@@ -148,33 +148,33 @@ PROJETOFINAL_Grupo1/
 ├── docs/
 │   ├── checklist_requisitos.md
 │   ├── setup_guide.md
-│   └── screenshots/  # Capturas de tela para evidencias de entrega
+│   └── screenshots/  # Capturas de tela para evidências de entrega
 ├── great_expectations/
 │   ├── great_expectations.yml
-│   ├── run_checkpoint.py  # Script de validacao executavel via CLI ou Airflow
+│   ├── run_checkpoint.py  # Script de validação executável via CLI ou Airflow
 │   ├── checkpoints/
 │   │   └── raw_inmet_weather_checkpoint.yml
 │   └── expectations/
 │       └── raw_inmet_weather_suite.json
 ├── ingestion/
 │   ├── Dockerfile
-│   ├── ingest_inmet.py  # Script de extracao e carga (EL)
+│   ├── ingest_inmet.py  # Script de extração e carga (EL)
 │   └── requirements.txt
 ├── sql/init/
-│   ├── 00_create_databases.sql  # Cria bancos e usuarios no PostgreSQL
-│   └── 01_schemas.sql           # Cria schemas raw/silver/gold e permissoes
-├── .env.example  # Variaveis de ambiente (copiar para .env)
+│   ├── 00_create_databases.sql  # Cria bancos e usuários no PostgreSQL
+│   └── 01_schemas.sql           # Cria schemas raw/silver/gold e permissões
+├── .env.example  # Variáveis de ambiente (copiar para .env)
 ├── .gitignore
 ├── docker-compose.yml
-├── requirements.txt  # Dependencias para execucao local (sem Docker)
+├── requirements.txt  # Dependências para execução local (sem Docker)
 └── README.md
 ```
 
 ---
 
-## 6. Pre-requisitos
+## 6. Pré-requisitos
 
-A unica dependencia necessaria na maquina local e o Docker. Nao e preciso instalar Python, dbt, Airflow ou qualquer outra ferramenta separadamente.
+A única dependência necessária na máquina local é o Docker. Não é preciso instalar Python, dbt, Airflow ou qualquer outra ferramenta separadamente.
 
 ### Windows
 
@@ -190,7 +190,7 @@ curl -fsSL https://get.docker.com | sh
 sudo usermod -aG docker $USER
 newgrp docker
 
-# Verificar instalacao
+# Verificar instalação
 docker compose version
 
 # Git
@@ -208,37 +208,37 @@ brew install git
 
 ## 7. Passo a passo para executar
 
-### 7.1 Clonar o repositorio
+### 7.1 Clonar o repositório
 
 ```bash
 git clone <URL_DO_REPOSITORIO>
 cd PROJETOFINAL_Grupo1
 ```
 
-### 7.2 Configurar variaveis de ambiente
+### 7.2 Configurar variáveis de ambiente
 
 ```bash
 cp .env.example .env
 ```
 
-O arquivo `.env.example` ja possui valores padrao funcionais para execucao local. Edite o `.env` apenas se quiser personalizar senhas, portas ou os anos de ingestao:
+O arquivo `.env.example` já possui valores padrão funcionais para execução local. Edite o `.env` apenas se quiser personalizar senhas, portas ou os anos de ingestão:
 
-| Variavel | Padrao | Descricao |
+| Variável | Padrão | Descrição |
 |---|---|---|
-| `POSTGRES_USER` | `inmet_user` | Usuario principal do PostgreSQL |
-| `POSTGRES_PASSWORD` | `inmet_pass` | Senha do usuario principal |
+| `POSTGRES_USER` | `inmet_user` | Usuário principal do PostgreSQL |
+| `POSTGRES_PASSWORD` | `inmet_pass` | Senha do usuário principal |
 | `POSTGRES_DB` | `inmet_db` | Banco de dados principal |
-| `ANALYTICS_USER` | `analytics_user` | Usuario usado pelo dbt e Metabase |
+| `ANALYTICS_USER` | `analytics_user` | Usuário usado pelo dbt e Metabase |
 | `ANALYTICS_PASSWORD` | `analytics_pass` | Senha do analytics_user |
 | `AIRFLOW_USER` | `admin` | Login da interface do Airflow |
 | `AIRFLOW_PASSWORD` | `admin` | Senha da interface do Airflow |
-| `INMET_YEARS` | `2026` | Anos a ingerir, separados por virgula (ex: `2026`) |
+| `INMET_YEARS` | `2026` | Anos a ingerir, separados por vírgula (ex: `2026`) |
 | `LOAD_MODE` | `full_refresh` | Modo de carga: `full_refresh` ou `incremental` |
 | `AIRFLOW_PORT` | `8080` | Porta local do Airflow |
 | `METABASE_PORT` | `3001` | Porta local do Metabase |
-| `DBT_DOCS_PORT` | `8081` | Porta local da documentacao dbt |
+| `DBT_DOCS_PORT` | `8081` | Porta local da documentação dbt |
 
-> Se alguma porta ja estiver em uso na sua maquina, altere o valor correspondente no `.env` antes de subir os containers.
+> Se alguma porta já estiver em uso na sua máquina, altere o valor correspondente no `.env` antes de subir os containers.
 
 ### 7.3 Subir o ambiente
 
@@ -246,15 +246,15 @@ O arquivo `.env.example` ja possui valores padrao funcionais para execucao local
 docker compose up -d --build
 ```
 
-Na primeira execucao, o Docker vai baixar as imagens base e construir a imagem customizada do Airflow. Isso pode levar de 3 a 5 minutos dependendo da conexao.
+Na primeira execução, o Docker vai baixar as imagens base e construir a imagem customizada do Airflow. Isso pode levar de 3 a 5 minutos dependendo da conexão.
 
-### 7.4 Verificar se todos os containers estao rodando
+### 7.4 Verificar se todos os containers estão rodando
 
 ```bash
 docker compose ps
 ```
 
-O resultado esperado e:
+O resultado esperado é:
 
 ```
 inmet-postgres              running (healthy)
@@ -267,11 +267,11 @@ inmet-metabase              running
 
 Se o `airflow-webserver` demorar para ficar `healthy`, aguarde mais 1 ou 2 minutos e rode `docker compose ps` novamente.
 
-### 7.5 Executar a ingestao inicial dos dados
+### 7.5 Executar a ingestão inicial dos dados
 
-O script de ingestao faz o download dos arquivos ZIP do INMET, extrai os CSVs e carrega os dados na tabela `raw.inmet_weather_raw`. Essa etapa pode ser executada de duas formas:
+O script de ingestão faz o download dos arquivos ZIP do INMET, extrai os CSVs e carrega os dados na tabela `raw.inmet_weather_raw`. Essa etapa pode ser executada de duas formas:
 
-**Opcao A - via container isolado (recomendado para a primeira carga):**
+**Opção A - via container isolado (recomendado para a primeira carga):**
 
 ```bash
 docker compose --profile bootstrap up inmet-ingestion
@@ -283,7 +283,7 @@ Aguarde o container encerrar com sucesso antes de prosseguir. O log deve finaliz
 [OK] Total de linhas carregadas: XXXXXXX
 ```
 
-**Opcao B - via Airflow:** a tarefa `python_ingestion_raw` executa a ingestao automaticamente quando a DAG e disparada (passo 7.6).
+**Opção B - via Airflow:** a tarefa `python_ingestion_raw` executa a ingestão automaticamente quando a DAG é disparada (passo 7.6).
 
 ### 7.6 Executar o pipeline no Airflow
 
@@ -291,7 +291,7 @@ Aguarde o container encerrar com sucesso antes de prosseguir. O log deve finaliz
 2. Login: `admin` / `admin`
 3. Localize a DAG `inmet_weather_pipeline`
 4. Ative o toggle para habilitar a DAG
-5. Clique no botao de execucao manual (Trigger DAG)
+5. Clique no botão de execução manual (Trigger DAG)
 
 A DAG vai executar as tarefas na seguinte ordem:
 
@@ -302,15 +302,15 @@ python_ingestion_raw  ->  airbyte_sensor  ->  great_expectations_validation
 
 Cada tarefa deve aparecer em verde ao completar. Em caso de falha, o Airflow tenta novamente automaticamente (2 retentativas com intervalo de 5 minutos).
 
-**Captura de tela da execucao da DAG:**
+**Captura de tela da execução da DAG:**
 
 ![Airflow DAG Diagram](docs/airflow_dag_diagram.jpg)
 
 ![Airflow DAG](docs/airflow_dag.jpg)
 
-### 7.7 Verificar o relatorio do Great Expectations
+### 7.7 Verificar o relatório do Great Expectations
 
-Apos a tarefa `great_expectations_validation` completar:
+Após a tarefa `great_expectations_validation` completar:
 
 ```bash
 cat great_expectations/uncommitted/validation_results/raw_inmet_weather_checkpoint.json
@@ -318,15 +318,15 @@ cat great_expectations/uncommitted/validation_results/raw_inmet_weather_checkpoi
 
 O campo `"success": true` confirma que os dados passaram em todas as expectativas configuradas.
 
-**Captura de tela do relatorio de validacao:**
+**Captura de tela do relatório de validação:**
 
 <!-- placeholder imagem Great Expectations 
 ![Great Expectations Validation Report](docs/ge_validation_report.png)
 -->
 
-### 7.8 Verificar a documentacao e linhagem do dbt
+### 7.8 Verificar a documentação e linhagem do dbt
 
-Acesse http://localhost:8081 para visualizar o lineage graph e as descricoes de todos os modelos, testes e fontes.
+Acesse http://localhost:8081 para visualizar o lineage graph e as descrições de todos os modelos, testes e fontes.
 
 **Captura de tela do lineage graph:**
 
@@ -335,15 +335,15 @@ Acesse http://localhost:8081 para visualizar o lineage graph e as descricoes de 
 ### 7.9 Configurar o Metabase
 
 1. Acesse http://localhost:3001 (ou a porta configurada em `METABASE_PORT`)
-2. Siga o wizard de configuracao inicial do Metabase
-3. Adicione a conexao com o banco de dados:
+2. Siga o wizard de configuração inicial do Metabase
+3. Adicione a conexão com o banco de dados:
    - **Tipo:** PostgreSQL
    - **Host:** `postgres`
    - **Porta:** `5432`
    - **Banco de dados:** `inmet_db`
-   - **Usuario:** `analytics_user`
+   - **Usuário:** `analytics_user`
    - **Senha:** `analytics_pass`
-4. Crie os dashboards usando as queries disponveis em `dashboards/dashboard_queries.sql`
+4. Crie os dashboards usando as queries disponíveis em `dashboards/dashboard_queries.sql`
 
 **Captura de tela dos dashboards:**
 
@@ -368,9 +368,9 @@ docker compose down -v
 
 ---
 
-### Execucao local sem Docker (opcional, para desenvolvimento)
+### Execução local sem Docker (opcional, para desenvolvimento)
 
-Se preferir rodar os componentes diretamente na sua maquina:
+Se preferir rodar os componentes diretamente na sua máquina:
 
 ```bash
 # Criar e ativar ambiente virtual
@@ -378,13 +378,13 @@ python -m venv .venv
 source .venv/bin/activate       # Linux / macOS
 .venv\Scripts\activate          # Windows
 
-# Instalar dependencias
+# Instalar dependências
 pip install -r requirements.txt
 
-# Ingestao
+# Ingestão
 python ingestion/ingest_inmet.py
 
-# Validacao Great Expectations
+# Validação Great Expectations
 python great_expectations/run_checkpoint.py
 
 # dbt
@@ -396,7 +396,7 @@ dbt docs generate --profiles-dir ../
 dbt docs serve --profiles-dir ../
 ```
 
-Certifique-se de que as variaveis de ambiente do `.env` estejam exportadas na sessao antes de executar os scripts.
+Certifique-se de que as variáveis de ambiente do `.env` estejam exportadas na sessão antes de executar os scripts.
 
 ---
 
@@ -406,62 +406,62 @@ Certifique-se de que as variaveis de ambiente do `.env` estejam exportadas na se
 
 Modelo de staging que padroniza os dados brutos da camada raw:
 
-- Normalizacao de nomes de colunas e tipos de dados
-- Conversao de valores numericos com virgula decimal para ponto
+- Normalização de nomes de colunas e tipos de dados
+- Conversão de valores numéricos com vírgula decimal para ponto
 - Tratamento de strings vazias e valores `NULL` textuais
-- Conversao do timestamp UTC para horario local de cada estado via macro `uf_to_timezone`
-- Filtragem de linhas sem data valida
+- Conversão do timestamp UTC para horário local de cada estado via macro `uf_to_timezone`
+- Filtragem de linhas sem data válida
 
 ### Camada Gold - modelo estrela
 
-| Tabela | Tipo | Descricao |
+| Tabela | Tipo | Descrição |
 |---|---|---|
-| `dim_station` | Dimensao | Estacoes meteorologicas WMO com localizacao geografica (lat/lon, UF, regiao) |
-| `dim_date` | Dimensao | Calendario com ano, mes, dia, nome do dia da semana e ano-mes |
-| `dim_time` | Dimensao | Horario com hora inteira e classificacao de periodo do dia |
-| `fact_weather_hourly` | Fato | Observacoes horarias com metricas de clima e classificacoes de risco |
+| `dim_station` | Dimensão | Estações meteorológicas WMO com localização geográfica (lat/lon, UF, região) |
+| `dim_date` | Dimensão | Calendário com ano, mês, dia, nome do dia da semana e ano-mês |
+| `dim_time` | Dimensão | Horário com hora inteira e classificação de período do dia |
+| `fact_weather_hourly` | Fato | Observações horárias com métricas de clima e classificações de risco |
 
-Todas as chaves substitutas (surrogate keys) sao geradas com `dbt_utils.generate_surrogate_key`.
+Todas as chaves substitutas (surrogate keys) são geradas com `dbt_utils.generate_surrogate_key`.
 
 ### Macros customizadas
 
-| Macro | Descricao |
+| Macro | Descrição |
 |---|---|
-| `precipitation_intensity_bucket` | Classifica precipitacao em sem_dado, sem_chuva, chuva_fraca, chuva_moderada ou chuva_intensa |
+| `precipitation_intensity_bucket` | Classifica precipitação em sem_dado, sem_chuva, chuva_fraca, chuva_moderada ou chuva_intensa |
 | `wind_risk_level` | Classifica rajada de vento em sem_dado, vento_fraco, vento_moderado, vento_forte ou vento_tempestade |
 | `uf_to_timezone` | Mapeia sigla de UF para o timezone IANA correspondente (ex: SP -> America/Sao_Paulo) |
 | `generate_schema_name` | Garante que os modelos sejam criados nos schemas silver e gold sem prefixo do projeto |
 
 ### Testes
 
-**Testes genericos** (definidos em `schema.yml`):
+**Testes genéricos** (definidos em `schema.yml`):
 - `unique` e `not_null` nas surrogate keys e identificadores naturais
-- `not_null` em colunas obrigatorias de data e hora
-- `accepted_values` em colunas categoricas: `mes`, `hora_int`, `periodo_dia`, `intensidade_chuva` e `risco_vento`
+- `not_null` em colunas obrigatórias de data e hora
+- `accepted_values` em colunas categóricas: `mes`, `hora_int`, `periodo_dia`, `intensidade_chuva` e `risco_vento`
 
 **Testes singulares** (em `dbt/inmet_analytics/tests/`):
-- `assert_no_future_dates.sql`: verifica se existem registros com data posterior a data atual na tabela fato
-- `assert_humidity_range.sql`: verifica se existem registros com umidade fora da faixa fisica valida (0 a 100)
+- `assert_no_future_dates.sql`: verifica se existem registros com data posterior à data atual na tabela fato
+- `assert_humidity_range.sql`: verifica se existem registros com umidade fora da faixa física válida (0 a 100)
 
 ---
 
-## 9. Validacao com Great Expectations
+## 9. Validação com Great Expectations
 
-A suite `raw_inmet_weather_suite` e aplicada exclusivamente sobre a camada raw, antes de qualquer transformacao. Ela contem 16 expectativas organizadas em quatro grupos:
+A suite `raw_inmet_weather_suite` é aplicada exclusivamente sobre a camada raw, antes de qualquer transformação. Ela contém 16 expectativas organizadas em quatro grupos:
 
-**Existencia de colunas obrigatorias (10 expectativas):**
+**Existência de colunas obrigatórias (10 expectativas):**
 `data`, `hora_referencia`, `meta_codigo_wmo`, `temperatura_do_ar_bulbo_seco_horaria`, `umidade_relativa_do_ar_horaria`, `precipitacao_total_horario`, `vento_velocidade_horaria`, `vento_direcao_horaria_graus`, `vento_rajada_maxima_horaria`, `pressao_atmosferica_ao_nivel_da_estacao_horaria`
 
-**Valores nao nulos (2 expectativas):**
-`data` e `meta_codigo_wmo` nao podem ter valores nulos
+**Valores não nulos (2 expectativas):**
+`data` e `meta_codigo_wmo` não podem ter valores nulos
 
 **Faixas de valores (3 expectativas):**
-- Umidade entre 0 e 100 (com tolerancia de 2%)
-- Temperatura entre -20 e 55 graus Celsius (com tolerancia de 2%)
-- Precipitacao nao negativa (com tolerancia de 0.1%)
+- Umidade entre 0 e 100 (com tolerância de 2%)
+- Temperatura entre -20 e 55 graus Celsius (com tolerância de 2%)
+- Precipitação não negativa (com tolerância de 0.1%)
 
 **Sanidade de volume (1 expectativa):**
-- Contagem de linhas entre 1.000.000 e 10.000.000 (detecta downloads truncados ou duplicacoes massivas)
+- Contagem de linhas entre 1.000.000 e 10.000.000 (detecta downloads truncados ou duplicações massivas)
 
 O checkpoint pode ser executado via CLI ou pela task `great_expectations_validation` da DAG:
 
@@ -473,31 +473,31 @@ python great_expectations/run_checkpoint.py
 
 ## 10. Dashboards no Metabase
 
-Os dashboards respondem diretamente as perguntas de negocio do storytelling. As queries base estao em `dashboards/dashboard_queries.sql`.
+Os dashboards respondem diretamente às perguntas de negócio do storytelling. As queries base estão em `dashboards/dashboard_queries.sql`.
 
-**Dashboard 1 - Volume de chuva por estacao e mes**
+**Dashboard 1 - Volume de chuva por estação e mês**
 
-Agrupa a precipitacao total por regiao, UF e estacao meteorologica. Permite identificar as regioes mais chuvosas e planejar janelas seguras para operacoes de campo.
+Agrupa a precipitação total por região, UF e estação meteorológica. Permite identificar as regiões mais chuvosas e planejar janelas seguras para operações de campo.
 
-**Dashboard 2 - Temperatura e umidade medias por dia**
+**Dashboard 2 - Temperatura e umidade médias por dia**
 
-Exibe a evolucao diaria de temperatura e umidade por estado. Util para monitorar condicoes ideais de pulverizacao e irrigacao.
+Exibe a evolução diária de temperatura e umidade por estado. Útil para monitorar condições ideais de pulverização e irrigação.
 
-**Dashboard 3 - Eventos de chuva intensa por regiao**
+**Dashboard 3 - Eventos de chuva intensa por região**
 
-Conta os eventos classificados como `chuva_intensa` por dia e regiao. Funciona como alerta operacional para orientar a suspensao de atividades de campo em situacoes de risco climatico.
+Conta os eventos classificados como `chuva_intensa` por dia e região. Funciona como alerta operacional para orientar a suspensão de atividades de campo em situações de risco climático.
 
 ---
 
-## 11. Solucao de problemas comuns
+## 11. Solução de problemas comuns
 
-**Porta ja em uso**
+**Porta já em uso**
 
 ```
 Error: ports are not available: exposing port TCP 0.0.0.0:8080
 ```
 
-Edite as variaveis de porta no `.env` e suba novamente:
+Edite as variáveis de porta no `.env` e suba novamente:
 
 ```bash
 # exemplo: trocar porta do Airflow
@@ -508,15 +508,15 @@ AIRFLOW_PORT=8082
 docker compose up -d
 ```
 
-**Airflow nao conecta no PostgreSQL**
+**Airflow não conecta no PostgreSQL**
 
-Verifique se o container `airflow-init` encerrou com codigo 0:
+Verifique se o container `airflow-init` encerrou com código 0:
 
 ```bash
 docker compose logs airflow-init
 ```
 
-Se houver erro de banco nao encontrado, recrie os volumes:
+Se houver erro de banco não encontrado, recrie os volumes:
 
 ```bash
 docker compose down -v
@@ -535,21 +535,19 @@ Se a URL mudou, atualize `INMET_BASE_URL` no `.env`.
 
 **dbt falha com `relation "raw.inmet_weather_raw" does not exist`**
 
-A ingestao precisa ter rodado antes do dbt. Certifique-se de que a tarefa `python_ingestion_raw` foi executada com sucesso no Airflow antes de `dbt_run`, ou rode a ingestao manualmente pelo passo 7.5.
+A ingestão precisa ter rodado antes do dbt. Certifique-se de que a tarefa `python_ingestion_raw` foi executada com sucesso no Airflow antes de `dbt_run`, ou rode a ingestão manualmente pelo passo 7.5.
 
-**Metabase perde dashboards apos reiniciar**
+**Metabase perde dashboards após reiniciar**
 
-Isso nao deve acontecer nessa configuracao. O banco de metadados do Metabase esta armazenado no PostgreSQL (`metabase_db`), que persiste no volume `postgres-data/`. Evite usar `docker compose down -v` em ambiente de desenvolvimento continuo.
+Isso não deve acontecer nessa configuração. O banco de metadados do Metabase está armazenado no PostgreSQL (`metabase_db`), que persiste no volume `postgres-data/`. Evite usar `docker compose down -v` em ambiente de desenvolvimento contínuo.
 
-**dbt docs nao carrega logo apos subir o ambiente**
+**dbt docs não carrega logo após subir o ambiente**
 
-O container `dbt-docs` executa `dbt docs generate` toda vez que inicializa. Aguarde cerca de 1 minuto apos o container subir antes de acessar http://localhost:8081.
+O container `dbt-docs` executa `dbt docs generate` toda vez que inicializa. Aguarde cerca de 1 minuto após o container subir antes de acessar http://localhost:8081.
 
 ---
 
-## 12. Referencias
+## 12. Referências
 
 - Dataset INMET: https://portal.inmet.gov.br/dadoshistoricos
 - GeoJSON dos estados brasileiros: https://github.com/giuliano-macedo/geodata-br-states
-
-│       ├── ge_validation_report.png  # [adicionar apos execucao]
