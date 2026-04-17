@@ -272,7 +272,7 @@ def ensure_schemas(engine):
 
 
 def main():
-    years = parse_years(os.getenv("INMET_YEARS", "2024,2025"))
+    years = parse_years(os.getenv("INMET_YEARS", "2026"))
     load_mode = os.getenv("LOAD_MODE", "full_refresh").strip().lower()
     base_url = os.getenv("INMET_BASE_URL", "https://portal.inmet.gov.br/uploads/dadoshistoricos")
     workdir = Path(os.getenv("WORKDIR", "/tmp/inmet"))
