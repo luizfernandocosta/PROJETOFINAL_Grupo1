@@ -1,9 +1,7 @@
 from __future__ import annotations
-
 import os
 import subprocess
 from datetime import datetime, timedelta
-
 from airflow import DAG
 from airflow.operators.bash import BashOperator
 from airflow.operators.empty import EmptyOperator
@@ -12,7 +10,7 @@ from airflow.operators.python import PythonOperator
 GE_PROVIDER_AVAILABLE = True
 try:
     from airflow.providers.great_expectations.operators.great_expectations import GreatExpectationsOperator
-except Exception:  # pragma: no cover
+except Exception:
     GE_PROVIDER_AVAILABLE = False
 
     class GreatExpectationsOperator(BashOperator):
@@ -55,8 +53,7 @@ with DAG(
         python_callable=run_ingestion_script,
     )
 
-    # Placeholder de dependência — mantém referência ao requisito AirbyteSensor do enunciado.
-    # Em uma evolução futura pode ser substituído pelo operador real do Airbyte.
+    # Placeholder de dependência, em uma evolução futura pode ser substituído pelo operador do Airbyte
     airbyte_sensor = EmptyOperator(task_id="airbyte_sensor")
 
     if GE_PROVIDER_AVAILABLE:
@@ -91,11 +88,5 @@ with DAG(
         task_id="dbt_docs_generate",
         bash_command="cd /opt/project/dbt/inmet_analytics && dbt docs generate --profiles-dir /opt/project/dbt",
     )
-
-    # Nota: dbt docs serve NÃO está na DAG intencionalmente.
-    # O servidor de documentação é gerenciado pelo serviço `inmet-dbt-docs`
-    # no docker-compose.yml e fica disponível permanentemente em localhost:8081.
-    # Colocar `dbt docs serve` aqui causaria o processo filho morrer
-    # ao término da task, sem servir nada.
 
     ingest_raw >> airbyte_sensor >> ge_validation >> dbt_deps >> dbt_run >> dbt_test >> dbt_docs

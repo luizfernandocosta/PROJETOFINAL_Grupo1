@@ -6,13 +6,12 @@ import unicodedata
 import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
-
 import pandas as pd
 import requests
 from sqlalchemy import create_engine, text
 
 
-def normalize_col(name: str) -> str:
+def normalize_col(name):
     value = unicodedata.normalize("NFKD", str(name)).encode("ascii", "ignore").decode("ascii")
     value = value.strip().lower()
     value = re.sub(r"[^a-z0-9]+", "_", value)
@@ -20,7 +19,7 @@ def normalize_col(name: str) -> str:
     return value.strip("_")
 
 
-def parse_years(raw_years: str) -> list[int]:
+def parse_years(raw_years):
     out = []
     for token in raw_years.split(","):
         token = token.strip()
@@ -28,21 +27,21 @@ def parse_years(raw_years: str) -> list[int]:
             continue
         out.append(int(token))
     if not out:
-        raise ValueError("INMET_YEARS vazio. Exemplo esperado: 2024,2025")
+        raise ValueError("INMET_YEARS vazio. Exemplo esperado: 2026")
     return out
 
 
-def build_pg_engine() -> tuple:
+def build_pg_engine():
     host = os.getenv("POSTGRES_HOST", "localhost")
     port = int(os.getenv("POSTGRES_PORT", "5432"))
-    db   = os.getenv("POSTGRES_DB", "inmet_db")
+    db = os.getenv("POSTGRES_DB", "inmet_db")
     user = os.getenv("POSTGRES_USER", "inmet_user")
-    pwd  = os.getenv("POSTGRES_PASSWORD", "inmet_pass")
-    uri  = f"postgresql+psycopg2://{user}:{pwd}@{host}:{port}/{db}"
+    pwd = os.getenv("POSTGRES_PASSWORD", "inmet_pass")
+    uri = f"postgresql+psycopg2://{user}:{pwd}@{host}:{port}/{db}"
     return create_engine(uri), uri
 
 
-def download_zip(base_url: str, year: int, workdir: Path) -> Path:
+def download_zip(base_url, year, workdir):
     workdir.mkdir(parents=True, exist_ok=True)
     url = f"{base_url.rstrip('/')}/{year}.zip"
     local_file = workdir / f"{year}.zip"
@@ -53,7 +52,7 @@ def download_zip(base_url: str, year: int, workdir: Path) -> Path:
     return local_file
 
 
-def split_metadata_and_data(raw_text: str) -> tuple[dict, str]:
+def split_metadata_and_data(raw_text):
     lines = raw_text.splitlines()
     metadata = {}
     header_idx = None
@@ -94,7 +93,7 @@ def split_metadata_and_data(raw_text: str) -> tuple[dict, str]:
     return metadata, tabular_text
 
 
-def ensure_raw_table_columns(engine, schema: str, table: str, columns: list[str]) -> None:
+def ensure_raw_table_columns(engine, schema, table, columns):
     with engine.begin() as conn:
         conn.execute(
             text(
@@ -122,7 +121,7 @@ def ensure_raw_table_columns(engine, schema: str, table: str, columns: list[str]
             conn.execute(text(f'ALTER TABLE {schema}.{table} ADD COLUMN "{col}" TEXT'))
 
 
-def parse_hour(raw_value: str) -> str:
+def parse_hour(raw_value):
     value = (raw_value or "").upper().replace("UTC", "").strip()
     digits = re.sub(r"[^0-9]", "", value)
     if not digits:
@@ -131,28 +130,28 @@ def parse_hour(raw_value: str) -> str:
     return f"{digits[:2]}:{digits[2:4]}:00"
 
 
-def parse_single_csv(file_bytes: bytes, source_file: str, source_year: int) -> pd.DataFrame:
+def parse_single_csv(file_bytes, source_file, source_year):
     decoded = file_bytes.decode("latin-1", errors="ignore")
     metadata, table_text = split_metadata_and_data(decoded)
 
     df = pd.read_csv(
-        io.StringIO(table_text),
-        sep=";",
-        dtype=str,
-        encoding="latin-1",
-        engine="python",
+        io.StringIO(table_text)
+        ,sep=";"
+        ,dtype=str
+        ,encoding="latin-1"
+        ,engine="python"
     )
 
     df.columns = [normalize_col(c) for c in df.columns]
     df = df.loc[:, [c for c in df.columns if c and not c.startswith("unnamed")]]
 
     canonical_prefixes = {
-        "data": "data",
-        "hora_utc": "hora_utc",
-        "hora": "hora",
-        "temperatura_do_ar_bulbo_seco_horaria": "temperatura_do_ar_bulbo_seco_horaria",
-        "umidade_relativa_do_ar_horaria": "umidade_relativa_do_ar_horaria",
-        "precipitacao_total_horario": "precipitacao_total_horario",
+        "data": "data"
+        ,"hora_utc": "hora_utc"
+        ,"hora": "hora"
+        ,"temperatura_do_ar_bulbo_seco_horaria": "temperatura_do_ar_bulbo_seco_horaria"
+        ,"umidade_relativa_do_ar_horaria": "umidade_relativa_do_ar_horaria"
+        ,"precipitacao_total_horario": "precipitacao_total_horario"
     }
     rename_map = {}
     for canonical, prefix in canonical_prefixes.items():
@@ -167,7 +166,7 @@ def parse_single_csv(file_bytes: bytes, source_file: str, source_year: int) -> p
     if "data" in df.columns:
         df["data"] = pd.to_datetime(df["data"], errors="coerce").dt.date.astype("string")
 
-    hour_col = "hora_utc" if "hora_utc" in df.columns else ("hora" if "hora" in df.columns else None)
+    hour_col = ("hora_utc" if "hora_utc" in df.columns else ("hora" if "hora" in df.columns else None))
     if hour_col:
         df["hora_referencia"] = df[hour_col].map(parse_hour)
     else:
@@ -184,7 +183,7 @@ def parse_single_csv(file_bytes: bytes, source_file: str, source_year: int) -> p
     return df
 
 
-def ingest_year(year: int, base_url: str, engine, load_mode: str, workdir: Path) -> int:
+def ingest_year(year, base_url, engine, load_mode, workdir):
     zip_path = download_zip(base_url, year, workdir)
     loaded_rows = 0
     already_loaded_files = set()
@@ -233,11 +232,11 @@ def ingest_year(year: int, base_url: str, engine, load_mode: str, workdir: Path)
                             """
                         ),
                         {
-                            "load_mode": load_mode,
-                            "source_year": year,
-                            "source_file": csv_name,
-                            "rows_loaded": int(len(df)),
-                            "details": "Arquivo processado com sucesso.",
+                            "load_mode": load_mode
+                            ,"source_year": year
+                            ,"source_file": csv_name
+                            ,"rows_loaded": int(len(df))
+                            ,"details": "Arquivo processado com sucesso."
                         },
                     )
                 if load_mode == "incremental":
@@ -258,25 +257,25 @@ def ensure_schemas(engine):
     CREATE SCHEMA IF NOT EXISTS gold;
 
     CREATE TABLE IF NOT EXISTS raw.ingestion_log (
-      ingestion_id BIGSERIAL PRIMARY KEY,
-      loaded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      load_mode VARCHAR(30) NOT NULL,
-      source_year INTEGER NOT NULL,
-      source_file TEXT NOT NULL,
-      rows_loaded INTEGER NOT NULL,
-      status VARCHAR(30) NOT NULL,
-      details TEXT
+      ingestion_id BIGSERIAL PRIMARY KEY
+      ,loaded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+      ,load_mode VARCHAR(30) NOT NULL
+      ,source_year INTEGER NOT NULL
+      ,source_file TEXT NOT NULL
+      ,rows_loaded INTEGER NOT NULL
+      ,status VARCHAR(30) NOT NULL
+      ,details TEXT
     );
     """
     with engine.begin() as conn:
         conn.execute(text(ddl))
 
 
-def main() -> int:
-    years    = parse_years(os.getenv("INMET_YEARS", "2024,2025"))
+def main():
+    years = parse_years(os.getenv("INMET_YEARS", "2024,2025"))
     load_mode = os.getenv("LOAD_MODE", "full_refresh").strip().lower()
-    base_url  = os.getenv("INMET_BASE_URL", "https://portal.inmet.gov.br/uploads/dadoshistoricos")
-    workdir   = Path(os.getenv("WORKDIR", "/tmp/inmet"))
+    base_url = os.getenv("INMET_BASE_URL", "https://portal.inmet.gov.br/uploads/dadoshistoricos")
+    workdir = Path(os.getenv("WORKDIR", "/tmp/inmet"))
 
     engine, uri = build_pg_engine()
     print(f"[INFO] Conectando em: {uri}")
@@ -311,10 +310,10 @@ def main() -> int:
                         """
                     ),
                     {
-                        "load_mode": load_mode,
-                        "source_year": year,
-                        "source_file": f"{year}.zip",
-                        "details": str(exc)[:5000],
+                        "load_mode": load_mode
+                        ,"source_year": year
+                        ,"source_file": f"{year}.zip"
+                        ,"details": str(exc)[:5000]
                     },
                 )
             print(f"[ERRO] Falha ao processar {year}: {exc}")

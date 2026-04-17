@@ -2,4 +2,3 @@ pandas==2.2.2
 sqlalchemy==2.0.31
 psycopg2-binary==2.9.9
 requests==2.32.3
-# coments isa - considerar criar um pyproject na raíz e puxar o Dockerfile pra raíz tbm pra centralizar os requisitos + inits do docker

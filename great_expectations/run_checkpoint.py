@@ -1,29 +1,3 @@
-"""
-run_checkpoint.py
-Executa as validações de qualidade sobre raw.inmet_weather_raw
-usando Great Expectations em modo pandas (sem datasource externo).
-
-Expectativas aplicadas
-──────────────────────
-Existência de colunas obrigatórias (11):
-  data, hora_referencia, meta_codigo_wmo,
-  temperatura_do_ar_bulbo_seco_horaria, umidade_relativa_do_ar_horaria,
-  precipitacao_total_horario, vento_velocidade_horaria,
-  vento_direcao_horaria_graus, vento_rajada_maxima_horaria,
-  pressao_atmosferica_ao_nivel_da_estacao_horaria, source_year
-
-Valores:
-  data                                 → not null
-  meta_codigo_wmo                      → not null
-  umidade_relativa_do_ar_horaria       → entre 0 e 100  (mostly 0.98)
-  temperatura_do_ar_bulbo_seco_horaria → entre -20 e 55 (mostly 0.98)
-  precipitacao_total_horario           → >= 0            (mostly 0.999)
-
-Volume:
-  row count entre 1 000 000 e 10 000 000
-  (≈ 600 estações × 8 760 h/ano × anos carregados)
-"""
-
 import json
 import os
 from datetime import datetime
@@ -43,20 +17,17 @@ MAX_EXPECTED_ROWS = int(os.getenv("GE_MAX_EXPECTED_ROWS", "10000000"))
 
 # Colunas obrigatórias com aliases para variações comuns de cabeçalho do INMET.
 REQUIRED_COLUMNS = {
-    "data": ["data"],
-    "hora_referencia": ["hora_referencia", "hora", "hora_utc"],
-    "meta_codigo_wmo": ["meta_codigo_wmo"],
-    "temperatura_do_ar_bulbo_seco_horaria": ["temperatura_do_ar_bulbo_seco_horaria"],
-    "umidade_relativa_do_ar_horaria": ["umidade_relativa_do_ar_horaria"],
-    "precipitacao_total_horario": ["precipitacao_total_horario"],
-    "vento_velocidade_horaria": ["vento_velocidade_horaria", "vento_velocidade_horaria_m_s"],
-    "vento_direcao_horaria_graus": ["vento_direcao_horaria_graus", "vento_direcao_horaria_gr_gr"],
-    "vento_rajada_maxima_horaria": ["vento_rajada_maxima_horaria", "vento_rajada_maxima_m_s"],
-    "pressao_atmosferica_ao_nivel_da_estacao_horaria": [
-        "pressao_atmosferica_ao_nivel_da_estacao_horaria",
-        "pressao_atmosferica_ao_nivel_da_estacao_horaria_mb",
-    ],
-    "source_year": ["source_year"],
+    "data": ["data"]
+    ,"hora_referencia": ["hora_referencia", "hora", "hora_utc"]
+    ,"meta_codigo_wmo": ["meta_codigo_wmo"]
+    ,"temperatura_do_ar_bulbo_seco_horaria": ["temperatura_do_ar_bulbo_seco_horaria"]
+    ,"umidade_relativa_do_ar_horaria": ["umidade_relativa_do_ar_horaria"]
+    ,"precipitacao_total_horario": ["precipitacao_total_horario"]
+    ,"vento_velocidade_horaria": ["vento_velocidade_horaria", "vento_velocidade_horaria_m_s"]
+    ,"vento_direcao_horaria_graus": ["vento_direcao_horaria_graus", "vento_direcao_horaria_gr_gr"]
+    ,"vento_rajada_maxima_horaria": ["vento_rajada_maxima_horaria", "vento_rajada_maxima_m_s"]
+    ,"pressao_atmosferica_ao_nivel_da_estacao_horaria": ["pressao_atmosferica_ao_nivel_da_estacao_horaria", "pressao_atmosferica_ao_nivel_da_estacao_horaria_mb"]
+    ,"source_year": ["source_year"]
 }
 
 
@@ -70,23 +41,23 @@ def _resolve_column(df_columns, candidates):
 def _build_engine():
     host = os.environ["POSTGRES_HOST"]
     port = os.getenv("POSTGRES_PORT", "5432")
-    db   = os.environ["POSTGRES_DB"]
+    db = os.environ["POSTGRES_DB"]
     user = os.environ["POSTGRES_USER"]
-    pwd  = os.environ["POSTGRES_PASSWORD"]
-    uri  = f"postgresql+psycopg2://{user}:{pwd}@{host}:{port}/{db}"
+    pwd = os.environ["POSTGRES_PASSWORD"]
+    uri = f"postgresql+psycopg2://{user}:{pwd}@{host}:{port}/{db}"
     return create_engine(uri)
 
 
-def _get_row_count(engine) -> int:
+def _get_row_count(engine):
     with engine.connect() as conn:
         result = conn.execute(text("SELECT COUNT(*) FROM raw.inmet_weather_raw"))
         return result.scalar()
 
 
-def main() -> int:
+def main():
     engine = _build_engine()
 
-    # Conta total de linhas antes de puxar amostra (evita OOM)
+    # Conta total de linhas antes de puxar amostra
     total_rows = _get_row_count(engine)
     print(f"[INFO] Total de linhas em raw.inmet_weather_raw: {total_rows:,}")
 
@@ -110,9 +81,9 @@ def main() -> int:
     }
 
     numeric_cols = [
-        resolved["umidade_relativa_do_ar_horaria"],
-        resolved["temperatura_do_ar_bulbo_seco_horaria"],
-        resolved["precipitacao_total_horario"],
+        resolved["umidade_relativa_do_ar_horaria"]
+        ,resolved["temperatura_do_ar_bulbo_seco_horaria"]
+        ,resolved["precipitacao_total_horario"]
     ]
     for col in numeric_cols:
         if col:
@@ -120,20 +91,20 @@ def main() -> int:
 
     validations = []
 
-    # ── 1. Colunas obrigatórias existem ─────────────────────────
+    # 1. Colunas obrigatórias existem
     for canonical, aliases in REQUIRED_COLUMNS.items():
         actual_col = resolved[canonical]
         validations.append(
             gx_df.expect_column_to_exist(actual_col if actual_col else aliases[0])
         )
 
-    # ── 2. Valores não nulos ─────────────────────────────────────
+    # 2. Valores não nulos
     if resolved["data"]:
         validations.append(gx_df.expect_column_values_to_not_be_null(resolved["data"]))
     if resolved["meta_codigo_wmo"]:
         validations.append(gx_df.expect_column_values_to_not_be_null(resolved["meta_codigo_wmo"]))
 
-    # ── 3. Umidade entre 0 e 100 ─────────────────────────────────
+    # 3. Umidade entre 0 e 100
     if resolved["umidade_relativa_do_ar_horaria"]:
         validations.append(
             gx_df.expect_column_values_to_be_between(
@@ -142,7 +113,7 @@ def main() -> int:
             )
         )
 
-    # ── 4. Temperatura entre -20 e 55 °C ────────────────────────
+    # 4. Temperatura entre -20 e 55 °C
     if resolved["temperatura_do_ar_bulbo_seco_horaria"]:
         validations.append(
             gx_df.expect_column_values_to_be_between(
@@ -151,7 +122,7 @@ def main() -> int:
             )
         )
 
-    # ── 5. Precipitação não pode ser negativa ────────────────────
+    # 5. Precipitação não pode ser negativa
     if resolved["precipitacao_total_horario"]:
         validations.append(
             gx_df.expect_column_values_to_be_between(
@@ -160,17 +131,13 @@ def main() -> int:
             )
         )
 
-    # ── 6. Row count dentro da faixa esperada ───────────────────
-    # Sanity check: detecta downloads truncados ou duplicações massivas.
-    # Estimativa depende da janela carregada (ano completo vs parcial).
-    # Limites podem ser ajustados por variável de ambiente.
-    # Usamos o count real (não a amostra) para essa validação.
+    # 6. Row count dentro da faixa esperada (Detecta downloads truncados ou duplicações massivas)
     row_count_ok = MIN_EXPECTED_ROWS <= total_rows <= MAX_EXPECTED_ROWS
     validations.append({
-        "expectation_type": "expect_table_row_count_to_be_between",
-        "success": row_count_ok,
-        "result": {"observed_value": total_rows},
-        "kwargs": {"min_value": MIN_EXPECTED_ROWS, "max_value": MAX_EXPECTED_ROWS},
+        "expectation_type": "expect_table_row_count_to_be_between"
+        ,"success": row_count_ok
+        ,"result": {"observed_value": total_rows}
+        ,"kwargs": {"min_value": MIN_EXPECTED_ROWS, "max_value": MAX_EXPECTED_ROWS}
     })
 
     success = all(
@@ -182,21 +149,21 @@ def main() -> int:
     REPORT_PATH.write_text(
         json.dumps(
             {
-                "checkpoint": "raw_inmet_weather_checkpoint",
-                "success": success,
-                "timestamp_utc": datetime.utcnow().isoformat(),
-                "total_rows_in_table": total_rows,
-                "total_expectations": len(validations),
-                "results": [
+                "checkpoint": "raw_inmet_weather_checkpoint"
+                ,"success": success
+                ,"timestamp_utc": datetime.utcnow().isoformat()
+                ,"total_rows_in_table": total_rows
+                ,"total_expectations": len(validations)
+                ,"results": [
                     v if isinstance(v, dict) else v.to_json_dict()
                     for v in validations
-                ],
-            },
-            ensure_ascii=False,
-            default=str,
-            indent=2,
+                ]
+            }
+            ,ensure_ascii=False
+            ,default=str
+            ,indent=2
         ),
-        encoding="utf-8",
+        encoding="utf-8"
     )
 
     if not success:

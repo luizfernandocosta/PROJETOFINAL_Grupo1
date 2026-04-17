@@ -1,17 +1,17 @@
-with base as (
-    select distinct hora_referencia
-    from {{ ref('stg_inmet_weather') }}
-    where hora_referencia is not null
+WITH base AS (
+    SELECT DISTINCT hora_referencia
+    FROM {{ ref('stg_inmet_weather') }}
+    WHERE hora_referencia IS NOT NULL
 )
 
-select
-    {{ dbt_utils.generate_surrogate_key(['hora_referencia']) }}  as time_sk,
-    hora_referencia,
-    extract(hour from hora_referencia)::int                      as hora_int,
-    case
-        when extract(hour from hora_referencia) between  0 and  5 then 'madrugada'
-        when extract(hour from hora_referencia) between  6 and 11 then 'manha'
-        when extract(hour from hora_referencia) between 12 and 17 then 'tarde'
-        else                                                            'noite'
-    end                                                          as periodo_dia
-from base
+SELECT
+    {{ dbt_utils.generate_surrogate_key(['hora_referencia']) }} AS time_sk
+    ,hora_referencia
+    ,EXTRACT(HOUR FROM hora_referencia)::INT AS hora_int
+    ,CASE
+        WHEN EXTRACT(HOUR FROM hora_referencia) BETWEEN 0 and 5 THEN 'madrugada'
+        WHEN EXTRACT(HOUR FROM hora_referencia) BETWEEN 6 and 11 THEN 'manha'
+        WHEN EXTRACT(HOUR FROM hora_referencia) BETWEEN 12 and 17 THEN 'tarde'
+        ELSE 'noite'
+        END AS periodo_dia
+FROM base

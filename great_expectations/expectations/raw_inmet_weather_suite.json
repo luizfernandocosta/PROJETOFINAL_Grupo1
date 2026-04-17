@@ -90,7 +90,7 @@
         "min_value": 0,
         "mostly": 0.999
       },
-      "meta": { "notes": "Precipitação negativa é fisicamente impossível — indica dado corrompido." }
+      "meta": { "notes": "Precipitação negativa é fisicamente impossível. Indica dado corrompido." }
     },
     {
       "expectation_type": "expect_table_row_count_to_be_between",
@@ -98,7 +98,7 @@
         "min_value": 1000000,
         "max_value": 10000000
       },
-      "meta": { "notes": "Estimativa: ~600 estações × 8.760 h/ano. Detecta downloads truncados ou duplicações." }
+      "meta": { "notes": "Estimativa: ~600 estações x 8.760 h/ano. Detecta downloads truncados ou duplicações." }
     }
   ],
   "meta": {

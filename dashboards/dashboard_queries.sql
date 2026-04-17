@@ -1,35 +1,50 @@
 -- Dashboard 1: volume de chuva por estação e mês
-select
-  d.ano_mes,
-  s.regiao,
-  s.uf,
-  s.nome_estacao,
-  round(sum(f.precipitacao_mm)::numeric, 2) as precipitacao_total_mm,
-  count(*) as leituras
-from gold.fact_weather_hourly f
-join gold.dim_station s on f.station_sk = s.station_sk
-join gold.dim_date d on f.date_sk = d.date_sk
-group by 1,2,3,4
-order by d.ano_mes, precipitacao_total_mm desc;
+SELECT
+  d.ano_mes
+  ,s.regiao
+  ,s.uf
+  ,s.nome_estacao
+  ,ROUND(SUM(f.precipitacao_mm)::NUMERIC, 2) AS precipitacao_total_mm
+  ,COUNT(*) AS leituras
+FROM gold.fact_weather_hourly AS f
+
+JOIN gold.dim_station AS s
+ON f.station_sk = s.station_sk
+
+JOIN gold.dim_date AS d
+ON f.date_sk = d.date_sk
+
+GROUP BY 1, 2, 3, 4
+
+ORDER BY d.ano_mes, precipitacao_total_mm DESC;
 
 -- Dashboard 2: temperatura e umidade médias por dia
-select
-  f.data_referencia,
-  s.uf,
-  round(avg(f.temperatura_c)::numeric, 2) as temperatura_media_c,
-  round(avg(f.umidade_pct)::numeric, 2) as umidade_media_pct
-from gold.fact_weather_hourly f
-join gold.dim_station s on f.station_sk = s.station_sk
-group by 1,2
-order by 1,2;
+SELECT
+  f.data_referencia
+  ,s.uf
+  ,ROUND(AVG(f.temperatura_c)::NUMERIC, 2) AS temperatura_media_c
+  ,ROUND(AVG(f.umidade_pct)::NUMERIC, 2) AS umidade_media_pct
+FROM gold.fact_weather_hourly AS f
 
--- Dashboard 2b: contagem de chuva intensa (alerta operacional)
-select
-  f.data_referencia,
-  s.regiao,
-  count(*) as eventos_chuva_intensa
-from gold.fact_weather_hourly f
-join gold.dim_station s on f.station_sk = s.station_sk
-where f.intensidade_chuva = 'chuva_intensa'
-group by 1,2
-order by 1,3 desc;
+JOIN gold.dim_station AS s
+ON f.station_sk = s.station_sk
+
+GROUP BY 1, 2
+
+ORDER BY 1, 2;
+
+-- Dashboard 3: contagem de chuva intensa (alerta operacional)
+SELECT
+  f.data_referencia
+  ,s.regiao
+  ,COUNT(*) AS eventos_chuva_intensa
+FROM gold.fact_weather_hourly AS f
+
+JOIN gold.dim_station AS s
+ON f.station_sk = s.station_sk
+
+WHERE f.intensidade_chuva = 'chuva_intensa'
+
+GROUP BY 1, 2
+
+ORDER BY 1, 3 DESC;

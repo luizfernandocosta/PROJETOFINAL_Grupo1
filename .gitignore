@@ -1,43 +1,31 @@
-# Ambiente Python
 __pycache__/
 *.pyc
 *.pyo
 .venv/
 venv/
 env/
-
-# Variáveis de ambiente — NUNCA versionar o .env com credenciais reais
 .env
 
-# Logs
 logs/
 *.log
 
-# Dados locais (grandes demais para versionar)
 data/
 .tmp/
 dados_inmet_*/
 
-# Dados do Docker (gerados em runtime)
 postgres-data/
 metabase-data/
 
-# Airflow
 .airflow/
 
-# dbt
 **/target/
 **/dbt_packages/
 **/logs/
 
-# Great Expectations — artefatos gerados em runtime
 **/uncommitted/data_docs/
 **/uncommitted/validations/
 **/uncommitted/validation_results/*.json
 
-# macOS
 .DS_Store
-
-# Windows
 Thumbs.db
 desktop.ini

@@ -1,14 +1,14 @@
-with base as (
-    select distinct data_referencia
-    from {{ ref('stg_inmet_weather') }}
+WITH base AS (
+    SELECT DISTINCT data_referencia
+    FROM {{ ref('stg_inmet_weather') }}
 )
 
-select
-    {{ dbt_utils.generate_surrogate_key(['data_referencia']) }}  as date_sk,
-    data_referencia,
-    extract(year  from data_referencia)::int                     as ano,
-    extract(month from data_referencia)::int                     as mes,
-    extract(day   from data_referencia)::int                     as dia,
-    to_char(data_referencia, 'YYYY-MM')                          as ano_mes,
-    to_char(data_referencia, 'Day')                              as nome_dia_semana
-from base
+SELECT
+    {{ dbt_utils.generate_surrogate_key(['data_referencia']) }} AS date_sk
+    ,data_referencia
+    ,EXTRACT(YEAR FROM data_referencia)::INT AS ano
+    ,EXTRACT(MONTH FROM data_referencia)::INT AS mes
+    ,EXTRACT(DAY FROM data_referencia)::INT AS dia
+    ,TO_CHAR(data_referencia, 'YYYY-MM') AS ano_mes
+    ,TO_CHAR(data_referencia, 'Day') AS nome_dia_semana
+FROM base
