@@ -1,0 +1,16 @@
+# Dependências para desenvolvimento local sem Docker
+# Permite rodar o pipeline fora dos containers para debug e testes
+
+# Uso:
+#   python -m venv .venv
+#   source .venv/bin/activate  # Linux/macOS
+#   .venv\Scripts\activate  # Windows
+#   pip install -r requirements.txt
+
+pandas==2.2.2
+sqlalchemy==2.0.31
+psycopg2-binary==2.9.9
+requests==2.32.3
+great_expectations==0.18.22
+dbt-postgres==1.8.2
+dbt-core==1.8.7
