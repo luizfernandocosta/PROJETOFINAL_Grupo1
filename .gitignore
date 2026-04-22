@@ -1,0 +1,4 @@
+/postgres-data/**
+/metabase-data/**
+/.idea/**
+.env

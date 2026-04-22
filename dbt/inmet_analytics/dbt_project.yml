@@ -21,6 +21,12 @@ models:
     staging:
       +schema: silver
       +materialized: view
+      +persist_docs:
+        relation: true
+        columns: true
     marts:
       +schema: gold
       +materialized: table
+      +persist_docs:
+        relation: true
+        columns: true
