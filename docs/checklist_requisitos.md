@@ -56,7 +56,7 @@ Legenda: **Integral** | **Parcial** | **Não realizado**
 | Requisito | Status | Evidência |
 |-----------|--------|-----------|
 | DAG com dependência explícita | Integral | `ingest_raw >> airbyte_sensor >> ge_validation >> dbt_deps >> dbt_run >> dbt_test >> dbt_docs` |
-| Sensor Airbyte | Integral | `EmptyOperator` como placeholder de dependência (evolução futura para operador Airbyte) |
+| Sensor Airbyte | Parcial | O airbyte foi implementado de forma parcial, para que ele funcione por completo teria que expor o banco local para a internet para que ele conseguisse acessar, e por se tratar de um experimento local, não vale a pena o risco de expor, mas caso contrário ele funciona normalmente com a DAG do airflow |
 | GreatExpectationsOperator | Integral | Usa provider oficial quando disponível; fallback para `BashOperator` com `run_checkpoint.py` |
 | BashOperator para dbt run e dbt test | Integral | Tasks `dbt_deps`, `dbt_run`, `dbt_test`, `dbt_docs_generate` |
 | Tratamento de falhas (retry, alerta) | Integral | `retries: 2`, `retry_delay: 5 min`, `email_on_failure` configurável |
