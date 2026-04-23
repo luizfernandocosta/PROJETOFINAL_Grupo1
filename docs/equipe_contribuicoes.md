@@ -90,6 +90,7 @@ Este documento especifica a atuação de cada integrante do grupo no projeto de 
 - Evolução do sistema com Airbyte
 - Construção do fluxo completo da pipeline
 - Garantia da integridade do pipeline de dados
+- Criacao de terraform para implementacao de toda stack
 
 **Artefatos Principais:**
 - `ingestion/ingest_inmet.py` — script de ingestão de dados do INMET
@@ -108,7 +109,7 @@ Este documento especifica a atuação de cada integrante do grupo no projeto de 
 | **Christian** | QA & Testes & Docs | Pipeline execution, debugging |
 | **Guilherme** | dbt & Analytics | Transformações, dashboards, Metabase |
 | **Isabella** | Ambiente, Docs & Coordenação | Config Docker/env, padronização, testes, PPT, entregas |
-| **Luiz** | Data Ingestion & Fluxo | Ingestão INMET, PostgreSQL, Airflow |
+| **Luiz** | Data Ingestion & Fluxo | Ingestão INMET, PostgreSQL, Airflow | Terraform |
 
 ---
 
