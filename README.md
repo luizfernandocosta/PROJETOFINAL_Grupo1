@@ -6,6 +6,12 @@ Pipeline ELT completo com dados meteorológicos históricos do INMET, aplicado a
 
 ## Sumário
 
+#### [Cobertura de requisitos](docs/checklist_requisitos.md)
+
+#### [Contribuições de cada membro](docs/equipe_contribuicoes.md)
+
+
+
 1. [Contexto e Storytelling](#1-contexto-e-storytelling)
 2. [Dataset](#2-dataset)
 3. [Arquitetura](#3-arquitetura)
@@ -18,6 +24,8 @@ Pipeline ELT completo com dados meteorológicos históricos do INMET, aplicado a
 10. [Dashboards no Metabase](#10-dashboards-no-metabase)
 11. [Solução de problemas comuns](#11-solução-de-problemas-comuns)
 12. [Referências](#12-referências)
+13. [Terraform - opcional](#13-opcional)
+    
 
 ---
 
