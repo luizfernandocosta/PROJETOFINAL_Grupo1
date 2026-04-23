@@ -551,3 +551,55 @@ O container `dbt-docs` executa `dbt docs generate` toda vez que inicializa. Agua
 
 - Dataset INMET: https://portal.inmet.gov.br/dadoshistoricos
 - GeoJSON dos estados brasileiros: https://github.com/giuliano-macedo/geodata-br-states
+
+## 13. Opcional
+
+### 13.1 Provisionamento de infraestrutura na Azure com Terraform
+
+O diretório terraform/azure-postgres/ provisiona um PostgreSQL Flexible Server na Azure (usado como alternativa ao Postgres local em ambientes de cloud).
+
+Pré-requisitos:
+
+Terraform >= 1.5.0
+
+Azure CLI
+
+#### 1. Verificar e instalar o Azure CLI
+
+Para verificar se esta instalado, use o seguinte comando:
+
+az version
+
+Caso nao seja encontrado, baixe no seu Sistema Operacional:
+
+macOS: https://docs.microsoft.com/pt-br/cli/azure/install-azure-cli-macos?view=azure-cli-latest
+Windows: https://docs.microsoft.com/pt-br/cli/azure/install-azure-cli-windows?view=azure-cli-latest
+Linux: https://docs.microsoft.com/pt-br/cli/azure/install-azure-cli-linux?view=azure-cli-latest
+
+Feito isso, autentique-se na Azure no terminal usando:
+
+az login
+
+Um navegador vai aparecer para voce se autenticar, insira seu login e senha e depois volte ao terminal
+
+Apos isso, entre na pasta do terraform/azure/ e execute o comando:
+
+terraform init
+
+Ele vai instalar todas as dependencias necessarias para rodar o terraform
+
+Apos isso, edite o arquivo terraform.tfvars.example, renomeie-o para terraform.tfvars e preencha as variaveis
+
+Depois rode o comando:
+
+terraform plan
+
+Isso vai mostrar o que vai ser criado dentro da Azure, se tudo estiver ok, rode o comando:
+
+terraform apply
+
+Quando terminar de usar, rode o seguinte comando:
+
+terraform destroy
+
+Isso vai destruir tudo que foi criado dentro da Azure

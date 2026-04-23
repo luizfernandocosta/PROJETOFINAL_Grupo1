@@ -61,20 +61,22 @@ Este documento especifica a atuação de cada integrante do grupo no projeto de 
 
 ### 4. **Isabella Abreu Comelli**
 
-**Rol Principal:** Integração de Dashboards, Testes, Documentação e Apresentações
+**Rol Principal:** Configuração de Ambiente, Debugging, Documentação e Coordenação de Entregas
 
 **Contribuições:**
-- Construção da integração com serviço de dashboards
-- Testes de execução do sistema integrado
-- Documentação técnica e de usuário
+- Identificação e correção de conflitos de porta via externalização para variáveis de ambiente no `.env`
+- Remoção do `dbt docs serve` da DAG do Airflow (substituído por container dedicado)
+- Padronização dos arquivos e código do repositório para consistência entre os entregáveis
+- Revisão, correção e iteração da documentação técnica (README.md)
+- Montagem da apresentação do projeto (PPT)
+- Coordenação da organização e entrega dos artefatos finais do grupo
+- Testes iterativos do ambiente completo, validando o fluxo ponta a ponta
 - Correção de bugs encontrados durante testes
-- Preparação e entrega de apresentações
 
 **Artefatos Principais:**
-- Documentação técnica (`docs/`)
-- Testes de integração
-- Apresentações e demos do projeto
-- Documentação de ambiente e setup
+- `.env.example` e `docker-compose.yml`: configuração de portas externalizadas
+- `README.md`: revisão, correções e novas iterações
+- Apresentação PPT do projeto
 
 ---
 
@@ -105,7 +107,7 @@ Este documento especifica a atuação de cada integrante do grupo no projeto de 
 | **Breno** | Arquitetura & Base | Estrutura do projeto, scaffolding |
 | **Christian** | QA & Testes & Docs | Pipeline execution, debugging |
 | **Guilherme** | dbt & Analytics | Transformações, dashboards, Metabase |
-| **Isabella** | Integração & Apresentação | Dashboard integration, docs, demos |
+| **Isabella** | Ambiente, Docs & Coordenação | Config Docker/env, padronização, testes, PPT, entregas |
 | **Luiz** | Data Ingestion & Fluxo | Ingestão INMET, PostgreSQL, Airflow |
 
 ---
