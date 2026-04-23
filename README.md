@@ -582,7 +582,7 @@ az login
 
 Um navegador vai aparecer para voce se autenticar, insira seu login e senha e depois volte ao terminal
 
-Apos isso, entre na pasta do terraform/azure-postgres/ e execute o comando:
+Apos isso, entre na pasta do terraform/azure/ e execute o comando:
 
 terraform init
 
